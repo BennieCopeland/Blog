@@ -1,5 +1,5 @@
 Title: About Me
 ---
-I'm awesome!
+I'm awesome! Also, I have a wife named Tomoe Copeland, and three kids.
 
-![image](/images/profile.png)
+![image](images/profile.png)
