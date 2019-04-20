@@ -3,6 +3,7 @@ phases:
   install:
     commands:
       - dotnet tool install -g Wyam.Tool
+      - export PATH="$PATH:/root/.dotnet/tools"
   build:
     commands:
       - wyam -v
