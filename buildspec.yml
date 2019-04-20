@@ -1,0 +1,11 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - dotnet tool install -g Wyam.Tool
+  build:
+    commands:
+      - wyam
+artifacts:
+  files:
+    - output/*
