@@ -6,7 +6,7 @@ phases:
       - export PATH="$PATH:/root/.dotnet/tools"
   build:
     commands:
-      - wyam
+      - wyam -v
   post_build:
     commands:
       - aws s3 rm --recursive "s3://www.benniecopeland.com/"
