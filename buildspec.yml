@@ -5,7 +5,7 @@ phases:
       - dotnet tool install -g Wyam.Tool
   build:
     commands:
-      - wyam
+      - wyam -v
 artifacts:
   files:
     - output/*
