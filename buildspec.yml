@@ -7,7 +7,7 @@ phases:
   build:
     commands:
       - wyam
-  post-build:
+  post_build:
     commands:
       - aws s3 rm --recursive "s3://www.benniecopeland.com/"
       - aws s3 cp output "s3://www.benniecopeland.com/" --recursive
