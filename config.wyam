@@ -2,7 +2,7 @@
 
 // Customize your settings and add new ones here
 Settings[Keys.Host] = "www.benniecopeland.com";
-// Settings[Keys.LinkHideExtensions] = false;
+Settings[Keys.LinkHideExtensions] = false;
 Settings[BlogKeys.Title] = "Bennie's Blog";
 Settings[BlogKeys.Description] = "Welcome!";
 
