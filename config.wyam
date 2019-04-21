@@ -1,5 +1,4 @@
 #recipe Blog
-#t Stellar
 
 // Customize your settings and add new ones here
 Settings[Keys.Host] = "www.benniecopeland.com";
