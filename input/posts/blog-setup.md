@@ -1,5 +1,5 @@
 Title: Wyam Blog Setup
-Published: 2019-04-18
+Published: 2099-04-18
 Lead: How I set up my static Wyam blog
 Tags:
     - Wyam

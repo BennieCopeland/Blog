@@ -1,4 +1,5 @@
 Title: My Reading List
+Lead: Books I've found useful to improve how I write code
 Published: 4/17/2019
 ---
 This is a list of books I've read or intend/need to read. Most of the books I've read snippets from, but have not dedicated myself to reading cover to cover or deeply. Items in **Bold** are books I've read all the way through.
@@ -12,6 +13,10 @@ This is a list of books I've read or intend/need to read. Most of the books I've
 * Reactive Messaging Patterns with the Actor Model
 * Hands-On Domain Driven Design with .NET
 * Secure By Design
+
+# Functional Programming
+* Get Programming with F#
+* Stylish F#
 
 # Event Sourcing
 * Versioning in an Event Sourced System
