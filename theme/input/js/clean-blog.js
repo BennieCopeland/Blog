@@ -10,6 +10,13 @@
     $(this).removeClass("floating-label-form-group-with-focus");
   });
 
+  // copy data-line property for PrismJS from <code> tag to <pre> tag
+  for (let element of document.getElementsByTagName('code')) {
+    if (element.dataset['line']) {
+      element.parentElement.dataset['line'] = element.dataset['line'];
+    }
+  }
+  
   // Show the navbar when the page is scrolled up
   var MQL = 992;
 
