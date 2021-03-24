@@ -17,6 +17,10 @@ This is a list of books I've read or intend/need to read. Most of the books I've
 # Functional Programming
 * Get Programming with F#
 * Stylish F#
+* Grokking Simplicity
+* Data-Oriented Programming
+* Algebra-Driven Design
+* Thinking With Types
 
 # Event Sourcing
 * Versioning in an Event Sourced System
