@@ -1,0 +1,41 @@
+body
+{
+  word-spacing: 0.15em;
+}
+
+.post-preview
+{
+  margin-bottom: 2em;
+}
+
+p {
+  margin: 30px 0;
+}
+
+code {
+  font-family: "Fira Code", monospace;
+}
+
+header.masthead {
+  .page-heading,
+  .post-heading,
+  .site-heading {
+    padding: 67px 0 50px 0;
+    @media only screen and (min-width: 768px) {
+      padding: 67px 0 100px 0;
+    }
+  }
+  .profile-image {
+    text-align: center;
+    img {
+      width: 100px;
+      border-radius: 50px;
+    }
+    @media only screen and (min-width: 768px) {
+      img {
+        width: 200px;
+        border-radius: 100px;
+      }
+    }
+  }
+}

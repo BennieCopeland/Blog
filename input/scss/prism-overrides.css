@@ -1,0 +1,15 @@
+pre[class*="language-"]
+{
+    font-size: 75%;
+    font-family: 'Fira Code', monospace;
+}
+
+code[class*="language-"]
+{
+    font-family: 'Fira Code', monospace;
+}
+
+.line-highlight
+{
+    background: linear-gradient(to right,hsla(39,100%,50%,.1) 70%, hsla(39,100%,50%,0));
+}
