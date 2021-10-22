@@ -1,5 +1,9 @@
 Title: How to send parallel HTTP requests in Elmish
-Published: 3/24/2099
+Published: 2021-03-26
+Tags:
+    - F#
+    - Fable
+    - Elmish
 ---
 Write about the two different ways to implement parallel HTTP requests Async.Parallel and Cmd.batch
 

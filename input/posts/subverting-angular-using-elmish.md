@@ -5,7 +5,19 @@ Tags:
     - Fable
     - Elmish
     - Angular
+Xref: subverting-angular-using-elmish
 ---
+Edit: 2021-10-22
+
+The original code in this article was extracted from an Angular 8 application that I maintain.
+While trying to create a sample project to share for the next article, I ran into issues with
+the original way I was unmounting Elmish/React. Either something changed between Angular 8 and
+Angular 12, or there is something unique about my particular application. The code in this article
+has been updated to reflect the working [sample project](https://github.com/BennieCopeland/SubvertingAngular)
+available on GitHub.
+
+End Edit.
+
 Over the past year I've been wanting to experiment with F#, Fable 2, and Elmish. Only one thing was standing in my way. The application that I
 currently maintain is written in Angular. I needed to figure out how to make Angular play nice with F# and Elmish. This is how I infected an
 Angular project with Elmish and began replacing it from the inside.
@@ -25,7 +37,7 @@ within the Angular source tree and treat it as a library. This would allow me to
 Angular without having to muck about with a multistage build process.
 
 ``` treeview {#subverting-angular-treeview .no-line-numbers}
-AngularClient/
+/
 |-- dist/
 |-- e2e/
 |-- node_modules/
@@ -34,7 +46,7 @@ AngularClient/
 |   |-- app/
 |   |-- assets/
 |   |-- elmish/
-|   |   |-- ElmishClient.fsproj
+|   |   |-- ElmishApplication.fsproj
 |   |   `-- App.fs
 |   `-- environments/
 |-- angular.json
@@ -69,21 +81,18 @@ limited to building only web applications. The following are just some of the te
 I went with React as it is the predominate template engine used for the Elmish runtime on the web. It also allowed me to use the React Material-UI
 component libraries to remain visually consistent with the Angular application's usage of `@angular/material`.
 
-#### **`AngularClient/package.json`**
+#### **`/package.json`**
 ```json
 {
   "dependencies": {
-    "@material-ui/core": "4.9.2",
-    "@material-ui/lab": "4.0.0-alpha.41",
-    "@material-ui/pickers": "^3.2.10",
-    "prop-types": "15.7.2",
+    "@types/uuid": "^8.3.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^8.4.1",
-    "fable-compiler": "^2.4.12",
-    "fable-loader": "^2.1.8"
+    "@angular-builders/custom-webpack": "^12.1.3",
+    "fable-compiler": "^2.13.0",
+    "fable-loader": "^2.1.9"
   }
 }
 ```
@@ -92,7 +101,7 @@ With the dependencies downloaded, I then needed to plug into Angular's build pip
 to replace the builder property on the `build` and `serve` targets to be `@angular-builders/custom-webpack`. The location of the custom webpack config is
 passed to the new builder via the `customWebpackConfig` option.
 
-#### **`AngularClient/angular.json`**
+#### **`/angular.json`**
 ```json
 {
   "projects": {
@@ -101,14 +110,14 @@ passed to the new builder via the `customWebpackConfig` option.
         "build": {
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "customWebpackConfig": { "path": "src/webpack.config.js" }
+            "customWebpackConfig": { "path": "src/webpack.config.js" },
+            "allowedCommonJsDependencies": [
+              "uuid"
+            ]
           }
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
-          "options": {
-            "customWebpackConfig": { "path": "src/webpack.config.js" }
-          }
+          "builder": "@angular-builders/custom-webpack:dev-server"
         }
       }
     }
@@ -119,7 +128,7 @@ passed to the new builder via the `customWebpackConfig` option.
 The webpack config to build the Fable project is very minimal. It consists of a rule to match on `.fs`, `.fsx`, and `.fsproj` files and
 pass them to the Fable compiler via the `fable-loader`.
 
-#### **`AngularClient/src/webpack.config.js`**
+#### **`/src/webpack.config.js`**
 ```javascript
 module.exports = {
     module: {
@@ -152,7 +161,7 @@ parameter to the function and is used by React as it's attachment point to the D
 that is passed in is the user's auth token, allowing the Elmish application to make calls to the
 backend REST API.
 
-#### **`AngularClient/src/elmish/App.fs`**
+#### **`/src/elmish/App.fs`**
 ```fsharp
 module App
 
@@ -186,8 +195,7 @@ let appInit htmlId authToken =
     |> Program.withConsoleTrace
     |> Program.runWith props
 
-let killApp htmlId =
-    let domNode = document.getElementById htmlId
+let killApp domNode =
     ReactDom.unmountComponentAtNode domNode
 ```
 
@@ -195,12 +203,12 @@ The TypeScript compiler cannot directly import the F# code as it doesn't underst
 I had to create a [TypeScript Declaration File](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 to provide a mapping to what the shape of the `appInit` F# function would be after it is transpiled to JavaScript. 
 
-#### **`AngularClient/src/App.d.ts`**
+#### **`/src/App.d.ts`**
 ```typescript
 declare module "*App.fs" {
     function appInit(htmlId: string, authToken: string): void;
     
-    function killApp (htmlId: string): void;
+    function killApp (domNode: Element): void;
 }
 ```
 
@@ -209,7 +217,7 @@ application that didn't involve spamming relative import paths everywhere. The `
 TypeScript compiler handled this requirement nicely with its `paths` property. This allows me to use `import {appInit} from '@elmish/App.fs'`
 to access functions from the Elmish application.
 
-#### **`AngularClient/tsconfig.json`**
+#### **`/tsconfig.json`**
 ```json
 {
   "compilerOptions": {
@@ -227,63 +235,55 @@ to access functions from the Elmish application.
 ```
 
 The final piece of the solution is the Angular component that brings all the parts together.
-On initialization, the component generates a unique Id for the `<div>` that React will attach to.
-After the view is initialized, the user's access token is retrieved and the Elmish application is
-started. When the component is destroyed, the underlying React application in terminated to prevent
-leaking memory.
+After the view is initialized, the user's access token is retrieved, a unique Id is generated for
+the `<div>` that React will attach to, and the Elmish application is started. When the component
+is destroyed, the underlying React application is terminated to prevent leaking memory.
 
-#### **`elmish-page.component.ts`**
+#### **`/src/app/elmish-page.component.ts`**
 ```typescript
 import {
     AfterViewInit,
     Component,
+    ElementRef,
     OnDestroy,
-    OnInit
+    ViewChild
 } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { appInit, killApp } from '@elmish/App.fs';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'elmish-page',
     template:
-        `<div class="page">
-            <div [id]="rootDomId"></div>
-        </div>`
+    `<div class="page">
+        <div #elmishApp></div>
+    </div>`
 })
 export class ElmishPageComponent implements
-    OnInit, AfterViewInit, OnDestroy {
+    AfterViewInit, OnDestroy {
 
-    rootDomId: string;
+    @ViewChild("elmishApp") elmishApp!: ElementRef;
 
-    constructor(private authService: OAuthService) { }
-
-    private isMounted(): boolean {
-        return !!this.rootDomId;
-    }
-
-    protected render() {
-        if (this.isMounted()) {
-            const authToken = this.authService.getAccessToken();
-            appInit(this.rootDomId, authToken);
-        }
-    }
-
-    ngOnInit() {
-        this.rootDomId = uuid();
-    }
+    constructor() { }
 
     ngAfterViewInit() {
-        this.render();
+        // a production app should grab this from an OIDC client
+        const authToken = "FAKE AUTH TOKEN";
+
+        let domNodeId = uuid();
+
+        this.elmishApp.nativeElement.id = domNodeId;
+        appInit(domNodeId, authToken);
     }
-    
+
     ngOnDestroy() {
-        killApp(this.rootDomId); // unmounts the react component
+        // unmounts the react component to prevent leaking memory
+        killApp(this.elmishApp.nativeElement);
     }
 }
 ```
 {.section-heading}
 ## Conclusion
 The solution above is just the beginning. It can support a small contained widget or be expanded to handle
-multiple pages with automatic route detection. In a future post I will expand on how I added multiple sub pages and
+multiple pages with automatic route detection. In a [future post](angular-and-elmish-routing-roundup) I will expand on how I added multiple sub pages and
 implemented routing between Angular and Elmish.
